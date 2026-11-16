@@ -15,6 +15,10 @@ export const Route = createFileRoute("/api/$")({
       PUT: handle,
       PATCH: handle,
       DELETE: handle,
+      OPTIONS: async () => {
+        const { corsPreflight } = await import("@/lib/proxy.server");
+        return corsPreflight();
+      },
     },
   },
 });

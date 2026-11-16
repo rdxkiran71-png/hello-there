@@ -12,7 +12,8 @@ import {
 } from "@/lib/rdx";
 import { bumpRequest, getStats } from "@/lib/stats.server";
 
-const UPSTREAM_TIMEOUT_MS = 45000;
+// Some upstream generators (video, quote images, AI search) legitimately take 50-90s.
+const UPSTREAM_TIMEOUT_MS = 150000;
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 600;
 
@@ -28,12 +29,26 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: numbe
   }
 }
 
+export const CORS_HEADERS: Record<string, string> = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Accept, apikey, Authorization",
+  "Access-Control-Expose-Headers": "Content-Disposition, X-Upstream-Status, X-Proxy-Attempts",
+};
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "Content-Type": "application/json; charset=utf-8", "X-Powered-By": BRAND.name },
+    headers: { "Content-Type": "application/json; charset=utf-8", "X-Powered-By": BRAND.name, ...CORS_HEADERS },
   });
 }
+
+export function corsPreflight() {
+  return new Response(null, { status: 204, headers: { ...CORS_HEADERS, "Access-Control-Max-Age": "86400" } });
+}
+
+const isTimeout = (err: unknown) =>
+  err instanceof Error && (err.name === "AbortError" || err.name === "TimeoutError");
 
 export function apiManifest() {
   return json({
@@ -60,6 +75,7 @@ export async function apiStats() {
         "Content-Type": "application/json; charset=utf-8",
         "Cache-Control": "no-store",
         "X-Powered-By": BRAND.name,
+        ...CORS_HEADERS,
       },
     },
   );
@@ -109,7 +125,8 @@ export async function proxyToUpstream(request: Request, splat: string) {
 
   const upstreamUrl = UPSTREAM + swapBrandKey(fullPath + reqUrl.search);
   const body = await buildBody(request);
-  await bumpRequest();
+  // Count the request in parallel with the upstream call.
+  const counted = bumpRequest();
 
   const headers: Record<string, string> = {
     Accept: request.headers.get("accept") || "application/json",
@@ -143,6 +160,8 @@ export async function proxyToUpstream(request: Request, splat: string) {
     } catch (err) {
       lastErr = err;
       upstream = undefined;
+      // A timed-out generation would only be restarted from scratch; give up instead.
+      if (isTimeout(err)) break;
       if (i < MAX_RETRIES) {
         await sleep(RETRY_DELAY_MS * Math.pow(2, i));
         continue;
@@ -150,7 +169,21 @@ export async function proxyToUpstream(request: Request, splat: string) {
     }
   }
 
+  await counted;
+
   if (!upstream) {
+    if (isTimeout(lastErr)) {
+      return json(
+        {
+          success: false,
+          brand: BRAND.name,
+          error: "Upstream timed out",
+          message: `No response from the provider after ${UPSTREAM_TIMEOUT_MS / 1000}s`,
+          attempts,
+        },
+        504,
+      );
+    }
     return json(
       {
         success: false,
@@ -164,26 +197,30 @@ export async function proxyToUpstream(request: Request, splat: string) {
   }
 
   try {
-    const buf = await upstream.arrayBuffer();
     const upstreamCt = upstream.headers.get("content-type") || "application/octet-stream";
     const outHeaders = new Headers({
       "Content-Type": upstreamCt,
       "X-Powered-By": BRAND.name,
       "X-Upstream-Status": String(upstream.status),
       "X-Proxy-Attempts": String(attempts),
+      ...CORS_HEADERS,
     });
     const cd = upstream.headers.get("content-disposition");
     if (cd) outHeaders.set("Content-Disposition", cd);
 
     if (upstreamCt.includes("application/json")) {
+      const text = await upstream.text();
       try {
-        const obj = JSON.parse(new TextDecoder().decode(buf));
+        const obj = JSON.parse(text);
         return new Response(JSON.stringify(rebrandJson(obj)), { status: upstream.status, headers: outHeaders });
       } catch {
-        // fall through to raw passthrough
+        return new Response(text, { status: upstream.status, headers: outHeaders });
       }
     }
-    return new Response(buf, { status: upstream.status, headers: outHeaders });
+    // Stream binary/media straight through (some responses are 40MB+).
+    const cl = upstream.headers.get("content-length");
+    if (cl) outHeaders.set("Content-Length", cl);
+    return new Response(upstream.body, { status: upstream.status, headers: outHeaders });
   } catch (err) {
     return json(
       {

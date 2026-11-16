@@ -108,6 +108,9 @@ const COLORS: Record<string, [string, string]> = {
 export const iconFor = (cat: string) => ICONS[cat] || "⚡";
 export const colorFor = (cat: string): [string, string] => COLORS[cat] || ["#ff2e3a", "#ff4d57"];
 
+/** Show the brand key wherever upstream docs mention their shared key. */
+const brandText = (s: string) => s.split(UPSTREAM_KEY).join(BRAND_KEY);
+
 type RawEndpoint = Partial<Endpoint> & { params?: EndpointParam[] };
 
 export const endpoints: Endpoint[] = (endpointsRaw as unknown as RawEndpoint[])
@@ -119,11 +122,15 @@ export const endpoints: Endpoint[] = (endpointsRaw as unknown as RawEndpoint[])
     method: e.method || "GET",
     path: String(e.path),
     description: (e.description || "").replace(/^\n+/, "").trim(),
-    params: (e.params || []).map((p) => ({
-      ...p,
-      description: (p.description || "").replace(/^\n+/, "").trim(),
-      default: p.default === UPSTREAM_KEY ? BRAND_KEY : p.default,
-    })),
+    params: (e.params || []).map((p) => {
+      const out: EndpointParam = {
+        ...p,
+        description: brandText((p.description || "").replace(/^\n+/, "").trim()),
+        default: p.default === UPSTREAM_KEY ? BRAND_KEY : p.default,
+      };
+      if (p.placeholder) out.placeholder = brandText(p.placeholder);
+      return out;
+    }),
   }));
 
 export const endpointById = new Map(endpoints.map((e) => [e.id, e]));
