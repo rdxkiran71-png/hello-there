@@ -10,33 +10,141 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as HealthRouteImport } from './routes/[_]health'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as ApiKeyRouteImport } from './routes/api-key'
+import { Route as DocsRouteImport } from './routes/docs'
+import { Route as ApiIndexRouteImport } from './routes/api/index'
+import { Route as ApiSplatRouteImport } from './routes/api/$'
+import { Route as CategorySlugRouteImport } from './routes/category.$slug'
+import { Route as EndpointIdRouteImport } from './routes/endpoint.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HealthRoute = HealthRouteImport.update({
+  id: '/_health',
+  path: '/_health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiKeyRoute = ApiKeyRouteImport.update({
+  id: '/api-key',
+  path: '/api-key',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsRoute = DocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiIndexRoute = ApiIndexRouteImport.update({
+  id: '/api/',
+  path: '/api/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSplatRoute = ApiSplatRouteImport.update({
+  id: '/api/$',
+  path: '/api/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategorySlugRoute = CategorySlugRouteImport.update({
+  id: '/category/$slug',
+  path: '/category/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EndpointIdRoute = EndpointIdRouteImport.update({
+  id: '/endpoint/$id',
+  path: '/endpoint/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/_health': typeof HealthRoute
+  '/about': typeof AboutRoute
+  '/api-key': typeof ApiKeyRoute
+  '/docs': typeof DocsRoute
+  '/api/$': typeof ApiSplatRoute
+  '/category/$slug': typeof CategorySlugRoute
+  '/endpoint/$id': typeof EndpointIdRoute
+  '/api/': typeof ApiIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/_health': typeof HealthRoute
+  '/about': typeof AboutRoute
+  '/api-key': typeof ApiKeyRoute
+  '/docs': typeof DocsRoute
+  '/api/$': typeof ApiSplatRoute
+  '/category/$slug': typeof CategorySlugRoute
+  '/endpoint/$id': typeof EndpointIdRoute
+  '/api': typeof ApiIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_health': typeof HealthRoute
+  '/about': typeof AboutRoute
+  '/api-key': typeof ApiKeyRoute
+  '/docs': typeof DocsRoute
+  '/api/$': typeof ApiSplatRoute
+  '/category/$slug': typeof CategorySlugRoute
+  '/endpoint/$id': typeof EndpointIdRoute
+  '/api/': typeof ApiIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/_health'
+    | '/about'
+    | '/api-key'
+    | '/docs'
+    | '/api/$'
+    | '/category/$slug'
+    | '/endpoint/$id'
+    | '/api/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/_health'
+    | '/about'
+    | '/api-key'
+    | '/docs'
+    | '/api/$'
+    | '/category/$slug'
+    | '/endpoint/$id'
+    | '/api'
+  id:
+    | '__root__'
+    | '/'
+    | '/_health'
+    | '/about'
+    | '/api-key'
+    | '/docs'
+    | '/api/$'
+    | '/category/$slug'
+    | '/endpoint/$id'
+    | '/api/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  HealthRoute: typeof HealthRoute
+  AboutRoute: typeof AboutRoute
+  ApiKeyRoute: typeof ApiKeyRoute
+  DocsRoute: typeof DocsRoute
+  ApiSplatRoute: typeof ApiSplatRoute
+  CategorySlugRoute: typeof CategorySlugRoute
+  EndpointIdRoute: typeof EndpointIdRoute
+  ApiIndexRoute: typeof ApiIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +156,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_health': {
+      id: '/_health'
+      path: '/_health'
+      fullPath: '/_health'
+      preLoaderRoute: typeof HealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api-key': {
+      id: '/api-key'
+      path: '/api-key'
+      fullPath: '/api-key'
+      preLoaderRoute: typeof ApiKeyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs': {
+      id: '/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof DocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/': {
+      id: '/api/'
+      path: '/api'
+      fullPath: '/api/'
+      preLoaderRoute: typeof ApiIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/$': {
+      id: '/api/$'
+      path: '/api/$'
+      fullPath: '/api/$'
+      preLoaderRoute: typeof ApiSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/category/$slug': {
+      id: '/category/$slug'
+      path: '/category/$slug'
+      fullPath: '/category/$slug'
+      preLoaderRoute: typeof CategorySlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/endpoint/$id': {
+      id: '/endpoint/$id'
+      path: '/endpoint/$id'
+      fullPath: '/endpoint/$id'
+      preLoaderRoute: typeof EndpointIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  HealthRoute: HealthRoute,
+  AboutRoute: AboutRoute,
+  ApiKeyRoute: ApiKeyRoute,
+  DocsRoute: DocsRoute,
+  ApiSplatRoute: ApiSplatRoute,
+  CategorySlugRoute: CategorySlugRoute,
+  EndpointIdRoute: EndpointIdRoute,
+  ApiIndexRoute: ApiIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

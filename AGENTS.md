@@ -28,3 +28,10 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+
+- The portal is a port of the SARDAR RDX Express/EJS app: `src/rdx.css` is the original stylesheet (imported from `src/styles.css`, Tailwind preflight deliberately omitted) and pages reuse its class names — keep markup class-based rather than rewriting into Tailwind, so the original look stays intact.
+- Endpoint catalogue lives in `src/data/endpoints.json` and is shaped by `src/lib/rdx.ts`; pages and server routes both read from that module.
+- `/api/*` is a server splat route (`src/routes/api/$.ts` → `src/lib/proxy.server.ts`) forwarding to the upstream provider; public URLs must stay at `/api/...` because external callers use them.
+- Public counters live in the `site_stats` table and are only touched through security-definer RPCs from server code (`src/lib/stats.server.ts`), because workers have no writable filesystem.

@@ -1,0 +1,75 @@
+{
+  "source": "github:mehakjutticpu/RDX-APIS-",
+  "capabilities": [
+    {
+      "capability": "pages (home, docs+search, category, endpoint try-it, api-key, about, 404)",
+      "source": "views/*.ejs",
+      "outcome": "migrate",
+      "status": "verified",
+      "next_action": "none"
+    },
+    {
+      "capability": "visual design + light/dark theme",
+      "source": "public/css/style.css, app.js",
+      "outcome": "migrate",
+      "status": "verified",
+      "next_action": "none"
+    },
+    {
+      "capability": "endpoint catalogue (325 endpoints)",
+      "source": "data/anabot-endpoints.json",
+      "outcome": "migrate",
+      "status": "verified",
+      "next_action": "none"
+    },
+    {
+      "capability": "/api/* reverse proxy to anabot.my.id with retries, key swap, rebrand",
+      "source": "server.js",
+      "outcome": "migrate",
+      "status": "verified",
+      "next_action": "none"
+    },
+    {
+      "capability": "/api manifest, /api/_stats, /_health",
+      "source": "server.js",
+      "outcome": "migrate",
+      "status": "verified",
+      "next_action": "none"
+    },
+    {
+      "capability": "request/viewer counters",
+      "source": "data/stats.json (empty in repo)",
+      "outcome": "migrate to Lovable Cloud table",
+      "status": "verified",
+      "next_action": "none"
+    },
+    {
+      "capability": "PWA manifest + icon",
+      "source": "public/manifest.webmanifest",
+      "outcome": "migrate",
+      "status": "verified",
+      "next_action": "none"
+    },
+    {
+      "capability": "service worker static cache",
+      "source": "public/sw.js",
+      "outcome": "dropped (breaks editor preview caching; app still installable via manifest)",
+      "status": "accepted",
+      "next_action": "none"
+    },
+    {
+      "capability": "auth / users",
+      "source": "none",
+      "outcome": "absent",
+      "status": "verified",
+      "next_action": "none"
+    },
+    {
+      "capability": "secrets",
+      "source": "none (upstream key is public 'freeApikey')",
+      "outcome": "absent",
+      "status": "verified",
+      "next_action": "none"
+    }
+  ]
+}
