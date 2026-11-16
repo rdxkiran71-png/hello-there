@@ -5,10 +5,19 @@ import { recordHomeVisit } from "@/lib/stats.functions";
 import { CountUp } from "@/components/rdx/CountUp";
 import { ApiCard, colorVars } from "@/components/rdx/ApiCard";
 
+type SiteStats = { total_requests: number; today_requests: number; total_viewers: number };
+const EMPTY_STATS: SiteStats = { total_requests: 0, today_requests: 0, total_viewers: 0 };
+
 const TITLE = `${BRAND.name} — ${BRAND.tagline}`;
 
 export const Route = createFileRoute("/")({
-  loader: () => recordHomeVisit(),
+  loader: async (): Promise<SiteStats> => {
+    try {
+      return (await recordHomeVisit()) ?? EMPTY_STATS;
+    } catch {
+      return EMPTY_STATS;
+    }
+  },
   head: () => ({
     meta: [
       { title: TITLE },
@@ -23,12 +32,12 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const initial = Route.useLoaderData();
-  const [stats, setStats] = useState(initial);
+  const loaded = Route.useLoaderData() as SiteStats | undefined;
+  const [stats, setStats] = useState<SiteStats>(() => loaded ?? EMPTY_STATS);
 
   useEffect(() => {
-    setStats(initial);
-  }, [initial]);
+    if (loaded) setStats(loaded);
+  }, [loaded]);
 
   useEffect(() => {
     const id = setInterval(async () => {
